@@ -1,4 +1,7 @@
-from django.http import HttpResponse
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, render_to_response
 
 # Create your views here.
@@ -42,6 +45,7 @@ def category(request, category_name_url):
 
     return render_to_response('rango/category.html', context_dict, context)
 
+@login_required
 def add_category(request):
     context = RequestContext(request)
 
@@ -58,6 +62,7 @@ def add_category(request):
 
     return render_to_response('rango/add_category.html', {'form': form}, context)
 
+@login_required
 def add_page(request, category_name_url):
     context = RequestContext(request)
     category_name = decode_url(category_name_url)
@@ -86,6 +91,7 @@ def add_page(request, category_name_url):
         form = PageForm()
 
     return render_to_response('rango/add_page.html', {'category_name_url':category_name_url, 'category_name':category_name, 'form':form}, context)
+
 
 def register(request):
     context = RequestContext(request)
@@ -121,7 +127,36 @@ def register(request):
 
     return render_to_response('rango/register.html', {'user_form':user_form, 'profile_form':profile_form, 'registered':registered}, context)
 
+def user_login(request):
+    context = RequestContext(request)
 
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+
+        user = authenticate(username=username, password=password)
+
+        if user:
+            if user.is_active:
+                login(request, user)
+                return HttpResponseRedirect('/rango/')
+            else:
+                return HttpResponse("Your Rango account is disabled.")
+        else:
+            print "Invalid login details: {0}, {1}".format(username, password)
+            return HttpResponse("Invalid credentials. Please try again.")
+
+    else:
+        return render_to_response('rango/login.html', {}, context)
+@login_required
+def restricted(request):
+    return HttpResponse("Hey, you are logged in!")
+
+
+@login_required
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect('/rango/')
 
 def encode_url(category_name_url):
     category_name = category_name_url.replace(' ', '_')
