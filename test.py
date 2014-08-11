@@ -9,5 +9,8 @@ file_name = os.path.join(path, "CompletedCourses.csv")
 
 file = open(file_name)
 
-for line in file:
-    print line
+#for line in file:
+    #print line
+
+i = 0 if False else 1
+print i

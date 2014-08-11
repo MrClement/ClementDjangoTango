@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
@@ -19,12 +20,28 @@ def index(request):
     for c in category_list:
         c.url = encode_url(c.name)
 
+    if request.session.get('last_visit'):
+        last_visit_time = request.session.get('last_visit')
+        visits = request.session.get('visits', 0)
+        if(datetime.now() - datetime.strptime(last_visit_time[:-7], "%Y-%m-%d %H:%M:%S")).seconds > 5:
+            request.session['visits'] = visits + 1
+            request.session['last_visit'] = str(datetime.now())
+
+    else:
+        request.session['last_visit'] = str(datetime.now())
+        request.session['visits'] = 1
+
+
     return render_to_response('rango/index.html', context_dict, context)
 
 
 def about(request):
     context = RequestContext(request)
-    return render_to_response('rango/about.html', context)
+    if request.session.get('visits'):
+        visits = request.session.get('visits')
+    else:
+        visits = 0
+    return render_to_response('rango/about.html', {'visits':visits} ,context)
 
 def category(request, category_name_url):
     context = RequestContext(request)

@@ -2,7 +2,11 @@
 {% load static %}
 {%  block title %}About Rango{% endblock %}
 {% block body_block %}
+    <div class="hero-unit">
     Hey! This is the about page!
     <br>
+    You have visited Rango {{ visits }} {% if visits > 1 %} times! {%else %} time. {% endif %}
+    <br>
     <img src="{% static "/media/rango.png" %}">
+    </div>
 {% endblock %}
